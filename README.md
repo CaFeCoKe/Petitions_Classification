@@ -18,6 +18,8 @@
 - 크롤링시 연속으로 페이지에 접근할 때 접근이 불가능한 페이지가 존재 할수 있으니 대기시간이 필요하다. 대기시간을 너무 짧게 하면 데이터 추출이 제대로 이루어지지 않는다.
     - 대기시간 20초로 진행시 약 8000개의 데이터를 668개밖에 추출하지 못한 결과
     ![캡처](https://user-images.githubusercontent.com/86700191/152285591-b26b7f83-58bd-4fc9-95e3-f11ff2030a32.PNG)
+    - 한 페이지당 대기시간 1초로 진행시 비교적 정확하게 가져온 결과
+    ![abcd](https://user-images.githubusercontent.com/86700191/152335229-cf4ac49b-a467-4f66-aac8-7e479f54dcd3.PNG)
 
 ## 5. 참고자료(사이트)
 - [PyTorch 공식 설명](https://pytorch.org/docs/stable/index.html)

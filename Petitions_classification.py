@@ -1,50 +1,54 @@
-import pandas as pd
-import numpy as np
-import requests
-from bs4 import BeautifulSoup
+import os
 import time
 
-# 크롤링
-result = pd.DataFrame()
-for i in range(595226, 603465):  # 595226~603464번 글이 2021년에 작성된 글
-    URL = "http://www1.president.go.kr/petitions/" + str(i)
+import pandas as pd
+import numpy as np
 
-    response = requests.get(URL)    # get 요청에 대한 응답저장 (= 페이지 접속)
-    html = response.text        # 접속 페이지의 HTML코드 저장
-    soup = BeautifulSoup(html, 'html.parser')       # parser를 이용해 HTML코드를 객체 구조화 (parshing)
+import requests
+from bs4 import BeautifulSoup
 
-    title = soup.find('h3', class_='petitionsView_title')   # 청원제목: h3 태그, class petitionsView_title에 해당
-    count = soup.find('span', class_='counter')     # 청원 참여인원: span 태그, class counter에 해당
+# 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
+if not os.path.exists('./crawling.csv'):
+    result = pd.DataFrame()
+    for i in range(595226, 603465):  # 595226~603464번 글이 2021년에 작성된 글
+        URL = "http://www1.president.go.kr/petitions/" + str(i)
 
-    for content in soup.select('div.petitionsView_write > div.View_write'):     # petitionsView_write 하위의 View_write에서 데이터 추출
-        content
+        response = requests.get(URL)    # get 요청에 대한 응답저장 (= 페이지 접속)
+        html = response.text        # 접속 페이지의 HTML코드 저장
+        time.sleep(1)       # 요청 시간 딜레이 (접근 실패 방지)
 
-    a = []
-    for tag in soup.select('ul.petitionsView_info_list > li'):      # ul 태그 petitionsView_info_list 하위의 리스트 속성값 추출
-        a.append(tag.contents[1])       # [<p>abc</p>, 'abcd'] 중 두번째 내용만 추출
+        soup = BeautifulSoup(html, 'html.parser')       # parser를 이용해 HTML코드를 객체 구조화 (parshing)
+        title = soup.find('h3', class_='petitionsView_title')   # 청원제목: h3 태그, class petitionsView_title에 해당
+        count = soup.find('span', class_='counter')     # 청원 참여인원: span 태그, class counter에 해당
 
-    # 추출한 데이터 데이터프레임으로 변환
-    if len(a) != 0:
-        df1 = pd.DataFrame({'start': [a[1]],
-                            'end': [a[2]],
-                            'category': [a[0]],
-                            'count': [count.text],
-                            'title': [title.text],
-                            'content': [content.text.strip()[0:13000]]  # 글 앞뒤 공백 제거후 데이터길이 13000자 제한(엑셀의 셀 내 글자 수 32767자 제한)
-                            })
+        for content in soup.select('div.petitionsView_write > div.View_write'):     # petitionsView_write 하위의 View_write에서 데이터 추출
+            content
 
-        result = pd.concat([result, df1])   # result 데이터프레임에 현재 추출한 데이터 누적 병합 (세로)
-        result.index = np.arange(len(result))   # 데이터 프레임 안댁스설정
+        a = []
+        for tag in soup.select('ul.petitionsView_info_list > li'):      # ul 태그 petitionsView_info_list 하위의 리스트 속성값 추출
+            a.append(tag.contents[1])       # [<p>abc</p>, 'abcd'] 중 두번째 내용만 추출
 
-    if i % 60 == 0:     # 페이지 접근이 불가능한 경우가 있을 수 있어 60건 크롤링 후 60초 대기
-        print("Sleep 60seconds. Count:" + str(i)
-              + ",  Local Time:" + time.strftime('%Y-%m-%d', time.localtime(time.time()))
-              + " " + time.strftime('%X', time.localtime(time.time()))
-              + ",  Data Length:" + str(len(result)))
-        time.sleep(60)
+        # 추출한 데이터 데이터프레임으로 변환
+        if len(a) != 0:
+            df1 = pd.DataFrame({'start': [a[1]],
+                                'end': [a[2]],
+                                'category': [a[0]],
+                                'count': [count.text],
+                                'title': [title.text],
+                                'content': [content.text.strip()[0:13000]]  # 글 앞뒤 공백 제거후 데이터길이 13000자 제한(엑셀의 셀 내 글자 수 32767자 제한)
+                                })
 
-# 크롤링 데이터 확인 및 엑셀파일로 저장
-print(result.shape)
-df = result
-df.head(5)
-df.to_csv('data/crawling.csv', index = False, encoding = 'utf-8-sig')
+            result = pd.concat([result, df1])   # result 데이터프레임에 현재 추출한 데이터 누적 병합 (세로)
+            result.index = np.arange(len(result))   # 데이터 프레임 안댁스설정
+
+        if i % 60 == 0:
+            print("Count:" + str(i)
+                  + ",  Local Time:" + time.strftime('%Y-%m-%d', time.localtime(time.time()))
+                  + " " + time.strftime('%X', time.localtime(time.time()))
+                  + ",  Data Length:" + str(len(result)))
+
+    # 크롤링 데이터 확인 및 엑셀파일로 저장
+    print(result.shape)
+    result.head()
+    result.to_csv('./crawling.csv', index=False, encoding='utf-8-sig')
+
