@@ -11,6 +11,9 @@
 ## 2. 알고리즘 순서도
 
 ## 3. 결과
+- 원본 데이터 및 토크나이징된 데이터
+![1](https://user-images.githubusercontent.com/86700191/152671181-8f4b42a1-00d8-4754-b3bf-8f8265f5098f.PNG)
+
 
 ## 4. 유의점
 - KoNLPy의 Class는 Java기반으로 되어있기 때문에 install전 ver.1.7.0 이상의 JDK, ver.0.5.7 이상의 JPype1이 설치 되어 있어야하며, JAVA_HOME을 환경변수로 설정 해놓아야 한다. (공식 사이트 참고)
