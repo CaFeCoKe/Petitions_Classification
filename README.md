@@ -23,6 +23,7 @@
 
 ## 5. 참고자료(사이트)
 - [PyTorch 공식 설명](https://pytorch.org/docs/stable/index.html)
+- [Pandas 공식 설명](https://pandas.pydata.org/docs/reference/index.html)
 - [KoNLPy 공식 사이트](https://konlpy.org/ko/latest/)
 - [Beautiful Soup 공식 문서](https://beautiful-soup-4.readthedocs.io/en/latest/)
 - [Base Code](https://github.com/bjpublic/DeepLearningProject)
