@@ -7,6 +7,8 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
+import re
+
 # 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
 if not os.path.exists('./crawling.csv'):
     result = pd.DataFrame()
@@ -47,8 +49,29 @@ if not os.path.exists('./crawling.csv'):
                   + " " + time.strftime('%X', time.localtime(time.time()))
                   + ",  Data Length:" + str(len(result)))
 
-    # 크롤링 데이터 확인 및 엑셀파일로 저장
+    # 크롤링 데이터 확인 및 csv파일로 저장
     print(result.shape)
-    result.head()
     result.to_csv('./crawling.csv', index=False, encoding='utf-8-sig')
 
+# csv파일에서 데이터 불러오기
+df = pd.read_csv('./crawling.csv')
+# print(df.head())
+
+# 데이터 전처리
+# 공백문자 공백으로 치환
+def remove_white_space(text):
+    text = re.sub(r'[\t\r\n\f\v]', ' ', str(text))
+    return text
+
+# 특수문자 공백으로 치환
+def remove_special_char(text):
+    text = re.sub('[^ ㄱ-ㅣ가-힣 0-9]+', ' ', str(text))
+    return text
+
+# 청원 제목에 공백문자, 특수문자 제거
+df.title = df.title.apply(remove_white_space)
+df.title = df.title.apply(remove_special_char)
+
+# 청원 내용에 공백문자, 특수문자 제거
+df.content = df.content.apply(remove_white_space)
+df.content = df.content.apply(remove_special_char)
