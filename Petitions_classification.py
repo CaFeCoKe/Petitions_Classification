@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 
 import re
+from konlpy.tag import Okt
 
 # 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
 if not os.path.exists('./crawling.csv'):
@@ -55,7 +56,7 @@ if not os.path.exists('./crawling.csv'):
 
 # csv파일에서 데이터 불러오기
 df = pd.read_csv('./crawling.csv')
-# print(df.head())
+print(df.head())
 
 # 데이터 전처리
 # 공백문자 공백으로 치환
@@ -75,3 +76,18 @@ df.title = df.title.apply(remove_special_char)
 # 청원 내용에 공백문자, 특수문자 제거
 df.content = df.content.apply(remove_white_space)
 df.content = df.content.apply(remove_special_char)
+
+# 토크나이징(Tokenizing)
+okt = Okt()
+
+df['title_token'] = df.title.apply(okt.morphs)      # 청원제목을 형태소(morphs) 단위로 토크나이징
+df['content_token'] = df.content.apply(okt.nouns)       # 청원내용을 명사(nouns) 단위로 토크나이징
+
+df['token_final'] = df.title_token + df.content_token   # 토큰화된 제목과 내용을 합쳐서 저장
+df['count'] = df['count'].replace({',' : ''}, regex = True).apply(lambda x : int(x))       # 참여인원의 단위에 쉼표를 제거하고 object형에서 int형 반환
+
+df['label'] = df['count'].apply(lambda x: 'Yes' if x>=1000 else 'No')       # 참여인원이 1000 이상이면 yes, 아니면 no로 label에 저장
+df_drop = df[['token_final', 'label']]      # token_final과 label만 분석에 필요
+
+print(df_drop.head())
+df_drop.to_csv('./Tokenizing.csv', index=False, encoding='utf-8-sig')
