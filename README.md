@@ -24,7 +24,7 @@
     ![캡처](https://user-images.githubusercontent.com/86700191/152285591-b26b7f83-58bd-4fc9-95e3-f11ff2030a32.PNG)
     - 한 페이지당 대기시간 1초로 진행시 비교적 정확하게 가져온 결과
     ![abcd](https://user-images.githubusercontent.com/86700191/152335229-cf4ac49b-a467-4f66-aac8-7e479f54dcd3.PNG)
-- torchtext 모듈 import 문제 (lagacy components)
+- torchtext 모듈 import 문제 (legacy components)
 ![torchtext](https://user-images.githubusercontent.com/86700191/152776011-4090c9ea-c6bc-46eb-8fd2-236c7865a668.PNG)
 
 ## 5. 참고자료(사이트)

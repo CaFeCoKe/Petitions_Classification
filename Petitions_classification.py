@@ -13,6 +13,12 @@ from konlpy.tag import Okt
 from gensim.models import Word2Vec
 from gensim.models import KeyedVectors
 
+from numpy.random import RandomState
+
+import torchtext
+from torchtext.legacy.data import Field
+from torchtext.legacy.data import TabularDataset
+
 # 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
 if not os.path.exists('./crawling.csv'):
     result = pd.DataFrame()
@@ -57,6 +63,8 @@ if not os.path.exists('./crawling.csv'):
     print(result.shape)
     result.to_csv('./crawling.csv', index=False, encoding='utf-8-sig')
 
+
+# 데이터 전처리
 df = pd.read_csv('./crawling.csv')      # csv파일에서 데이터 불러오기 (시간절약)
 # 공백문자 공백으로 치환
 def remove_white_space(text):
@@ -76,6 +84,7 @@ df.title = df.title.apply(remove_special_char)
 df.content = df.content.apply(remove_white_space)
 df.content = df.content.apply(remove_special_char)
 
+
 # 토크나이징(Tokenizing)
 okt = Okt()
 
@@ -90,6 +99,7 @@ df_drop = df[['token_final', 'label']]      # token_final과 label만 분석에 
 
 df_drop.to_csv('./Tokenizing.csv', index=False, encoding='utf-8-sig')   # 토크나이징된 데이터 저장
 
+
 # 단어 임베딩
 # Skip-Gram 방식, 임베딩 벡터 크기는 100, 문맥파악을 위한 앞, 뒤 토큰수 2, 단어 최소 빈도 수를 1회로 제한
 embedding_model = Word2Vec(df_drop['token_final'],
@@ -99,3 +109,34 @@ print(embedding_model)
 
 embedding_model.wv.save_word2vec_format('./petitions_tokens_w2v')    # 모델 저장
 loaded_model = KeyedVectors.load_word2vec_format('./petitions_tokens_w2v')   # 모델 로드
+
+
+# 데이터셋 설계
+# 데이터셋 분할및 저장
+rng = RandomState()
+
+# 훈련데이터, 테스트데이터 분할(8:2)
+train = df_drop.sample(frac=0.8, random_state=rng)
+test = df_drop.loc[~df_drop.index.isin(train.index)]
+
+# 훈련데이터, 테스트데이터 저장
+train.to_csv('./train.csv', index=False, encoding='utf-8-sig')
+test.to_csv('./test.csv', index=False, encoding='utf-8-sig')
+
+# 토크나이징
+def tokenizer(text):
+    text = re.sub('[\[\]\']', '', str(text))    # ( ['a', 'b']  -> a, b )
+    text = text.split(', ')     # ,를 기준으로 각 토큰 분리
+    return text
+
+TEXT = Field(tokenize=tokenizer)    # Input (TEXT = token_final)
+LABEL = Field(sequential = False)   # Output (LABEL = label)
+
+# 데이터셋 생성 (파일에서 읽어옴)
+train, validation = TabularDataset.splits(
+    path='./', train='train.csv', validation='test.csv', format='csv',
+    fields=[('text', TEXT), ('label', LABEL)], skip_header=True)
+
+# 테스트
+print("Train:", train[0].text,  train[0].label)
+print("Validation:", validation[0].text, validation[0].label)
