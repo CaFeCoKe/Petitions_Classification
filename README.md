@@ -31,3 +31,4 @@
 - [KoNLPy 공식 사이트](https://konlpy.org/ko/latest/)
 - [Beautiful Soup 공식 문서](https://beautiful-soup-4.readthedocs.io/en/latest/)
 - [Base Code](https://github.com/bjpublic/DeepLearningProject)
+- [Word2Vec의 학습방식(CBOW vs Skip-gram)](https://wikidocs.net/22660)
