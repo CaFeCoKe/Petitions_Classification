@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup
 import re
 from konlpy.tag import Okt
 
+from gensim.models import Word2Vec
+from gensim.models import KeyedVectors
+
 # 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
 if not os.path.exists('./crawling.csv'):
     result = pd.DataFrame()
@@ -54,11 +57,7 @@ if not os.path.exists('./crawling.csv'):
     print(result.shape)
     result.to_csv('./crawling.csv', index=False, encoding='utf-8-sig')
 
-# csv파일에서 데이터 불러오기
-df = pd.read_csv('./crawling.csv')
-print(df.head())
-
-# 데이터 전처리
+df = pd.read_csv('./crawling.csv')      # csv파일에서 데이터 불러오기 (시간절약)
 # 공백문자 공백으로 치환
 def remove_white_space(text):
     text = re.sub(r'[\t\r\n\f\v]', ' ', str(text))
@@ -84,10 +83,26 @@ df['title_token'] = df.title.apply(okt.morphs)      # 청원제목을 형태소(
 df['content_token'] = df.content.apply(okt.nouns)       # 청원내용을 명사(nouns) 단위로 토크나이징
 
 df['token_final'] = df.title_token + df.content_token   # 토큰화된 제목과 내용을 합쳐서 저장
-df['count'] = df['count'].replace({',' : ''}, regex = True).apply(lambda x : int(x))       # 참여인원의 단위에 쉼표를 제거하고 object형에서 int형 반환
+df['count'] = df['count'].replace({',' : ''}, regex=True).apply(lambda x : int(x))       # 참여인원의 단위에 쉼표를 제거하고 object형에서 int형 반환
 
-df['label'] = df['count'].apply(lambda x: 'Yes' if x>=1000 else 'No')       # 참여인원이 1000 이상이면 yes, 아니면 no로 label에 저장
+df['label'] = df['count'].apply(lambda x: 'Yes' if x >= 1000 else 'No')       # 참여인원이 1000 이상이면 yes, 아니면 no로 label에 저장
 df_drop = df[['token_final', 'label']]      # token_final과 label만 분석에 필요
 
-print(df_drop.head())
-df_drop.to_csv('./Tokenizing.csv', index=False, encoding='utf-8-sig')
+df_drop.to_csv('./Tokenizing.csv', index=False, encoding='utf-8-sig')   # 토크나이징된 데이터 저장
+
+# 단어 임베딩
+# Skip-Gram 방식, 임베딩 벡터 크기는 100, 문맥파악을 위한 앞, 뒤 토큰수 2, 단어 최소 빈도 수를 1회로 제한
+embedding_model = Word2Vec(df_drop['token_final'],
+                           sg=1, vector_size=100, window=2, min_count=1, workers=4)
+
+print(embedding_model)
+"""" 테스트
+model_result = embedding_model.wv.most_similar("코로나")
+print(model_result)
+"""
+embedding_model.wv.save_word2vec_format('./petitions_tokens_w2v')    # 모델 저장
+loaded_model = KeyedVectors.load_word2vec_format('./petitions_tokens_w2v')   # 모델 로드
+"""" 테스트
+model_result = loaded_model.most_similar("코로나")
+print(model_result)
+"""
