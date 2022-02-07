@@ -96,13 +96,6 @@ embedding_model = Word2Vec(df_drop['token_final'],
                            sg=1, vector_size=100, window=2, min_count=1, workers=4)
 
 print(embedding_model)
-"""" 테스트
-model_result = embedding_model.wv.most_similar("코로나")
-print(model_result)
-"""
+
 embedding_model.wv.save_word2vec_format('./petitions_tokens_w2v')    # 모델 저장
 loaded_model = KeyedVectors.load_word2vec_format('./petitions_tokens_w2v')   # 모델 로드
-"""" 테스트
-model_result = loaded_model.most_similar("코로나")
-print(model_result)
-"""
