@@ -15,9 +15,13 @@ from gensim.models import KeyedVectors
 
 from numpy.random import RandomState
 
+import torch
 import torchtext
 from torchtext.legacy.data import Field
 from torchtext.legacy.data import TabularDataset
+from torchtext.legacy.data import BucketIterator
+from torchtext.vocab import Vectors
+
 
 # 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
 if not os.path.exists('./crawling.csv'):
@@ -137,6 +141,19 @@ train, validation = TabularDataset.splits(
     path='./', train='train.csv', validation='test.csv', format='csv',
     fields=[('text', TEXT), ('label', LABEL)], skip_header=True)
 
-# 테스트
-print("Train:", train[0].text,  train[0].label)
-print("Validation:", validation[0].text, validation[0].label)
+# 단어장 만들기
+vectors = Vectors(name="./petitions_tokens_w2v")
+
+# 훈련데이터의 단어장을 생성 (임베딩 벡터 값을 저장된 Word2Vec 모델로 초기화)
+TEXT.build_vocab(train, vectors=vectors, min_freq=1, max_size=None)
+LABEL.build_vocab(train)
+
+vocab = TEXT.vocab
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# 배치 사이즈를 8로 하여 훈련, 평가(테스트)데이터의 Batch Data 생성
+train_iter, validation_iter = BucketIterator.splits(
+        datasets=(train, validation), batch_size=8, device=device, sort=False)
+
+print('임베딩 벡터의 개수와 차원 : {} '.format(TEXT.vocab.vectors.shape))
