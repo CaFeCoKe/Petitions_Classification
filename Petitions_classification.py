@@ -72,10 +72,13 @@ if not os.path.exists('./crawling.csv'):
 
 # 데이터 전처리
 df = pd.read_csv('./crawling.csv')      # csv파일에서 데이터 불러오기 (시간절약)
+
+
 # 공백문자 공백으로 치환
 def remove_white_space(text):
     text = re.sub(r'[\t\r\n\f\v]', ' ', str(text))
     return text
+
 
 # 특수문자 공백으로 치환
 def remove_special_char(text):
@@ -129,14 +132,16 @@ test = df_drop.loc[~df_drop.index.isin(train.index)]
 train.to_csv('./train.csv', index=False, encoding='utf-8-sig')
 test.to_csv('./test.csv', index=False, encoding='utf-8-sig')
 
+
 # 토크나이징
 def tokenizer(text):
     text = re.sub('[\[\]\']', '', str(text))    # ( ['a', 'b']  -> a, b )
     text = text.split(', ')     # ,를 기준으로 각 토큰 분리
     return text
 
+
 TEXT = Field(tokenize=tokenizer)    # Input (TEXT = token_final)
-LABEL = Field(sequential = False)   # Output (LABEL = label)
+LABEL = Field(sequential=False)   # Output (LABEL = label)
 
 # 데이터셋 생성 (파일에서 읽어옴)
 train, validation = TabularDataset.splits(
@@ -239,3 +244,29 @@ def evaluate(model, device, itr):
     accuracy = 100.0 * corrects / len(itr.dataset)
 
     return test_loss, accuracy
+
+
+# 모델 학습 실행
+model = TextCNN(vocab, 100, 10, [3, 4, 5], 2).to(device)
+print(model)
+
+optimizer = optim.Adam(model.parameters(), lr=0.001)        # adam optimizer 사용, 학습률은 0.005
+
+best_test_acc = 0.0
+
+for epoch in range(1, 10 + 1):       # epoch 10번 실행
+
+    tr_loss, tr_acc = train(model, device, train_iter, optimizer)
+    print('Train Epoch: {} \t Loss: {} \t Accuracy: {}%'.format(epoch, tr_loss, tr_acc))
+
+    val_loss, val_acc = evaluate(model, device, validation_iter)
+    print('Valid Epoch: {} \t Loss: {} \t Accuracy: {}%'.format(epoch, val_loss, val_acc))
+
+    if val_acc > best_test_acc:     # 현 epoch의 정확도가 더 높을 시 갱신
+        best_test_acc = val_acc
+
+        print("model saves at {} accuracy".format(best_test_acc))
+        torch.save(model.state_dict(), "TextCNN_Best_Validation.pt")       # 정확도 갱신시 현 모델 저장 및 갱신
+
+    print('-----------------------------------------------------------------------------')
+
