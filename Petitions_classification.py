@@ -3,6 +3,7 @@ import time
 
 import pandas as pd
 import numpy as np
+from numpy.random import RandomState
 
 import requests
 from bs4 import BeautifulSoup
@@ -13,8 +14,6 @@ from konlpy.tag import Okt
 from gensim.models import Word2Vec
 from gensim.models import KeyedVectors
 
-from numpy.random import RandomState
-
 import torch
 import torchtext
 from torchtext.legacy.data import Field
@@ -22,6 +21,9 @@ from torchtext.legacy.data import TabularDataset
 from torchtext.legacy.data import BucketIterator
 from torchtext.vocab import Vectors
 
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
 # 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
 if not os.path.exists('./crawling.csv'):
@@ -156,4 +158,33 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 train_iter, validation_iter = BucketIterator.splits(
         datasets=(train, validation), batch_size=8, device=device, sort=False)
 
-print('임베딩 벡터의 개수와 차원 : {} '.format(TEXT.vocab.vectors.shape))
+
+# TextCNN 설계
+class TextCNN(nn.Module):
+    def __init__(self, vocab_built, emb_dim, dim_channel, kernel_wins, num_class):
+        super(TextCNN, self).__init__()
+
+        self.embed = nn.Embedding(len(vocab_built), emb_dim)    # vocab size * emd dimension
+        self.embed.weight.data.copy_(vocab_built.vectors)   # Word2Vec으로 학습한 데이터 가져오기
+
+        self.convs = nn.ModuleList([nn.Conv2d(1, dim_channel, (w, emb_dim)) for w in kernel_wins])      # 임베딩 결과를 Conv2d를 통해 필터 생성
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.4)      # 오버피팅 방지용 드롭아웃 40퍼 설정
+        self.fc = nn.Linear(len(kernel_wins) * dim_channel, num_class)
+
+    def forward(self, x):
+        emb_x = self.embed(x)
+        emb_x = emb_x.unsqueeze(1)      # 첫번째 축에 차원 추가(텍스트데이터(2D) -> 이미지화(3D))
+
+        con_x = [self.relu(conv(emb_x)) for conv in self.convs]     # 리스트 형태의 필터를 각각 통과하여 feature map 생성 후 relu를 통해 activation map 생성
+
+        pool_x = [F.max_pool1d(x.squeeze(-1), x.size()[2]) for x in con_x]      # Max Pooling 진행
+
+        fc_x = torch.cat(pool_x, dim=1)     # 1차원 Pooling 벡터를 concat하여 하나의 fc 생성
+        fc_x = fc_x.squeeze(-1)     # 차원 줄이기
+        fc_x = self.dropout(fc_x)       # 드롭아웃 적용
+
+        logit = self.fc(fc_x)
+
+        return logit
+
