@@ -188,3 +188,30 @@ class TextCNN(nn.Module):
 
         return logit
 
+
+# 훈련 데이터로 학습하여 모델화
+def train(model, device, train_itr, optimizer):
+    model.train()       # Train model로 변경
+    corrects, train_loss = 0.0, 0
+
+    for batch in train_itr:
+        text, target = batch.text, batch.label
+        text = torch.transpose(text, 0, 1)      # 역행렬로 변환
+        target.data.sub_(1)     # 타겟의 각 값을 1씩 줄이기
+        text, target = text.to(device), target.to(device)
+
+        optimizer.zero_grad()       # optimizer 초기화
+        output = model(text)
+
+        loss = F.cross_entropy(output, target)      # Loss 함수로 교차 엔트로피 사용 (Softmax로 Yes/No 분류 + Negative Log Loss 계산)
+        loss.backward()      # 역전파로 Gradient를 계산 후 파라미터에 할당
+        optimizer.step()      # 파라미터 업데이트
+
+        train_loss += loss.item()       # Loss 값 누적
+        result = torch.max(output, 1)[1]     # 인덱스별로 계산된 출력 값중 가장 큰 클래스 저장
+        corrects += (result.view(target.size()).data == target.data).sum()      # 예측값과 레이블 데이터를 비교하여 맞는 것은 누적
+
+    train_loss /= len(train_itr.dataset)        # Loss 값을 Batch 값으로 나누어 미니 배치마다의 Loss 값의 평균을 구함
+    accuracy = 100.0 * corrects / len(train_itr.dataset)        # 정확도 값을 Batch 값으로 나누어 미니 배치마다의 정확도 평균을 구함
+
+    return train_loss, accuracy
