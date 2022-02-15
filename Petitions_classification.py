@@ -202,7 +202,6 @@ def train(model, device, train_itr, optimizer):
 
         optimizer.zero_grad()       # optimizer 초기화
         output = model(text)
-
         loss = F.cross_entropy(output, target)      # Loss 함수로 교차 엔트로피 사용 (Softmax로 Yes/No 분류 + Negative Log Loss 계산)
         loss.backward()      # 역전파로 Gradient를 계산 후 파라미터에 할당
         optimizer.step()      # 파라미터 업데이트
@@ -215,3 +214,28 @@ def train(model, device, train_itr, optimizer):
     accuracy = 100.0 * corrects / len(train_itr.dataset)        # 정확도 값을 Batch 값으로 나누어 미니 배치마다의 정확도 평균을 구함
 
     return train_loss, accuracy
+
+
+# 모델 평가 함수
+def evaluate(model, device, itr):
+    model.eval()
+    corrects, test_loss = 0.0, 0
+
+    for batch in itr:
+        text = batch.text
+        target = batch.label
+        text = torch.transpose(text, 0, 1)
+        target.data.sub_(1)
+        text, target = text.to(device), target.to(device)
+
+        output = model(text)
+        loss = F.cross_entropy(output, target)
+
+        test_loss += loss.item()
+        result = torch.max(output, 1)[1]
+        corrects += (result.view(target.size()).data == target.data).sum()
+
+    test_loss /= len(itr.dataset)
+    accuracy = 100.0 * corrects / len(itr.dataset)
+
+    return test_loss, accuracy
