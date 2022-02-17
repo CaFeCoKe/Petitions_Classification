@@ -34,3 +34,5 @@
 - [Beautiful Soup 공식 문서](https://beautiful-soup-4.readthedocs.io/en/latest/)
 - [Base Code](https://github.com/bjpublic/DeepLearningProject)
 - [Word2Vec의 학습방식(CBOW vs Skip-gram)](https://wikidocs.net/22660)
+- [Yoon Kim의 Convolutional Neural Networks for Sentence Classification 논문](https://arxiv.org/abs/1408.5882v2)
+- [Denny Britz의 TextCNN Tensorflow 구현](https://github.com/dennybritz/cnn-text-classification-tf)
