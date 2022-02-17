@@ -2,11 +2,12 @@
  Using PyTorch-TextCNN
 
 ## 1. 사용 라이브러리
-- Pytorch : TextCNN 모델 설계
-- Pandas, numpy : 데이터셋 만들기
+- Pytorch (torch) : TextCNN 모델 설계
 - Beautiful Soup, request : 크롤링
+- Pandas, numpy : 크롤링 데이터 만들기
 - KoNLPy : 한국어 자연어 처리(토크나이징)
 - gensim : 단어 임베딩
+- torchtext, re : 데이터셋, 단어장 만들기
 
 ## 2. 알고리즘 순서도
 
