@@ -25,6 +25,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+import matplotlib.pyplot as plt
+
 # 크롤링한 데이터가 존재하지 않을 시에 크롤링 진행
 if not os.path.exists('./crawling.csv'):
     result = pd.DataFrame()
@@ -174,7 +176,7 @@ class TextCNN(nn.Module):
 
         self.convs = nn.ModuleList([nn.Conv2d(1, dim_channel, (w, emb_dim)) for w in kernel_wins])      # 임베딩 결과를 Conv2d를 통해 필터 생성
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.4)      # 오버피팅 방지용 드롭아웃 40퍼 설정
+        self.dropout = nn.Dropout(0.5)      # 오버피팅 방지용 드롭아웃 40퍼 설정
         self.fc = nn.Linear(len(kernel_wins) * dim_channel, num_class)
 
     def forward(self, x):
@@ -224,7 +226,7 @@ def train(model, device, train_itr, optimizer):
 # 모델 평가 함수
 def evaluate(model, device, itr):
     model.eval()
-    corrects, test_loss = 0.0, 0
+    corrects, val_loss = 0.0, 0
 
     for batch in itr:
         text = batch.text
@@ -236,23 +238,30 @@ def evaluate(model, device, itr):
         output = model(text)
         loss = F.cross_entropy(output, target)
 
-        test_loss += loss.item()
+        val_loss += loss.item()
         result = torch.max(output, 1)[1]
         corrects += (result.view(target.size()).data == target.data).sum()
 
-    test_loss /= len(itr.dataset)
+    val_loss /= len(itr.dataset)
     accuracy = 100.0 * corrects / len(itr.dataset)
 
-    return test_loss, accuracy
+    return val_loss, accuracy
 
 
 # 모델 학습 실행
 model = TextCNN(vocab, 100, 10, [3, 4, 5], 2).to(device)
 print(model)
 
-optimizer = optim.Adam(model.parameters(), lr=0.001)        # adam optimizer 사용, 학습률은 0.005
+optimizer = optim.Adam(model.parameters(), lr=0.005)        # adam optimizer 사용, 학습률은 0.005
 
 best_test_acc = 0.0
+
+"""
+loss_tr = []
+acc_tr = []
+loss_val = []
+acc_val = []
+"""
 
 for epoch in range(1, 10 + 1):       # epoch 10번 실행
 
@@ -264,9 +273,37 @@ for epoch in range(1, 10 + 1):       # epoch 10번 실행
 
     if val_acc > best_test_acc:     # 현 epoch의 정확도가 더 높을 시 갱신
         best_test_acc = val_acc
-
         print("model saves at {} accuracy".format(best_test_acc))
+
         torch.save(model.state_dict(), "TextCNN_Best_Validation.pt")       # 정확도 갱신시 현 모델 저장 및 갱신
 
     print('-----------------------------------------------------------------------------')
 
+    """
+    # overfitting 확인하기 위한 플롯 그리기
+    loss_tr.append(tr_loss)
+    loss_val.append(val_loss)
+    acc_tr.append(tr_acc)
+    acc_val.append(val_acc)
+
+np1 = np.array(loss_tr)
+np2 = np.array(loss_val)
+np3 = np.array(acc_tr)
+np4 = np.array(acc_val)
+
+plt.subplot(2, 1, 1)
+plt.xlabel('epoch')
+plt.ylabel('loss')
+plt.plot(np1, label='Loss of train')
+plt.plot(np2, label='Loss of Validation')
+plt.legend()  # 라벨표시를 위한 범례
+
+plt.subplot(2, 1, 2)
+plt.xlabel('epoch')
+plt.ylabel('acc')
+plt.plot(np3, label='acc of train')
+plt.plot(np4, label='acc of validation')
+plt.legend()  # 라벨표시를 위한 범례
+
+plt.show()
+"""
