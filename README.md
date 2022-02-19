@@ -1,5 +1,7 @@
 # Petitions_Classification
- Using PyTorch-TextCNN
+프로젝트의 목표는 '주목받을만한 청원 분류하는 모델만들기'이다. 높은 청원 참여인원을 받은 글들의 특징을 학습하여 새 글이 입력되었을 때 유사성을 계산하여 판단하는 모델을 만들어 보며 토크나이징, 임베딩등 NLP에 필요한 기술중 일부를 사용하고, 텍스트 데이터를 CNN에 적용한 TextCNN을 사용하게 된다. 
+ 
+https://user-images.githubusercontent.com/86700191/154801568-3fa87c0f-ca8c-41c7-9535-8ce106298ff0.mp4
 
 ## 1. 사용 라이브러리
 - Pytorch (torch) : TextCNN 모델 설계
