@@ -12,6 +12,7 @@ https://user-images.githubusercontent.com/86700191/154801568-3fa87c0f-ca8c-41c7-
 - torchtext, re : 데이터셋, 단어장 만들기
 
 ## 2. 알고리즘 순서도
+![Petitions_Classication](https://user-images.githubusercontent.com/86700191/154838789-748d213b-f8c9-40fc-95bd-4edc9a5fcfa3.png)
 
 ## 3. 결과
 - 원본 데이터 및 토크나이징된 데이터
