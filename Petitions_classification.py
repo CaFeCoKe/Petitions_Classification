@@ -176,7 +176,7 @@ class TextCNN(nn.Module):
 
         self.convs = nn.ModuleList([nn.Conv2d(1, dim_channel, (w, emb_dim)) for w in kernel_wins])      # 임베딩 결과를 Conv2d를 통해 필터 생성
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.5)      # 오버피팅 방지용 드롭아웃 40퍼 설정
+        self.dropout = nn.Dropout(0.5)      # 오버피팅 방지용 드롭아웃 50퍼 설정
         self.fc = nn.Linear(len(kernel_wins) * dim_channel, num_class)
 
     def forward(self, x):
