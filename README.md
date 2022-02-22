@@ -14,7 +14,10 @@ https://user-images.githubusercontent.com/86700191/154801568-3fa87c0f-ca8c-41c7-
 ## 2. 알고리즘 순서도
 ![Petitions_Classication](https://user-images.githubusercontent.com/86700191/154838789-748d213b-f8c9-40fc-95bd-4edc9a5fcfa3.png)
 
-## 3. 결과
+## 3. 네트워크 구성도
+![TextCNN](https://user-images.githubusercontent.com/86700191/155136244-ce4b1661-966d-4e5e-bfb7-a8f1e66262bc.png)
+
+## 4. 결과
 - 원본 데이터 및 토크나이징된 데이터
 ![1](https://user-images.githubusercontent.com/86700191/152671181-8f4b42a1-00d8-4754-b3bf-8f8265f5098f.PNG)
 - 임베딩한 결과 및 테스트(중심단어=코로나)
@@ -22,7 +25,7 @@ https://user-images.githubusercontent.com/86700191/154801568-3fa87c0f-ca8c-41c7-
 - 손실값과 정확도 (Overfitting 구간 확인)
 ![overfiiting](https://user-images.githubusercontent.com/86700191/154800955-ad1e5b9c-287e-46e0-a7e7-4be90f1da4bc.PNG)
 
-## 4. 유의점
+## 5. 유의점
 - KoNLPy의 Class는 Java기반으로 되어있기 때문에 install전 ver.1.7.0 이상의 JDK, ver.0.5.7 이상의 JPype1이 설치 되어 있어야하며, JAVA_HOME을 환경변수로 설정 해놓아야 한다. (공식 사이트 참고)
 - [JPype1 설치](https://www.lfd.uci.edu/~gohlke/pythonlibs/#jpype)시 OS의 비트에 맞게 설치하야하며, Python의 버전과도 동일해야 설치가 가능하다. (cp36 = Python 3.6)
 - 크롤링시 연속으로 페이지에 접근할 때 접근이 불가능한 페이지가 존재 할수 있으니 대기시간이 필요하다. 대기시간을 너무 짧게 하면 데이터 추출이 제대로 이루어지지 않는다.
@@ -33,7 +36,7 @@ https://user-images.githubusercontent.com/86700191/154801568-3fa87c0f-ca8c-41c7-
 - torchtext 모듈 import 문제 (legacy components)
 ![torchtext](https://user-images.githubusercontent.com/86700191/152776011-4090c9ea-c6bc-46eb-8fd2-236c7865a668.PNG)
 
-## 5. 참고자료(사이트)
+## 6. 참고자료(사이트)
 - [PyTorch 공식 설명](https://pytorch.org/docs/stable/index.html)
 - [Pandas 공식 설명](https://pandas.pydata.org/docs/reference/index.html)
 - [KoNLPy 공식 사이트](https://konlpy.org/ko/latest/)
